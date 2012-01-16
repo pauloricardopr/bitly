@@ -8,8 +8,9 @@ module Bitly
       base_uri 'http://api.bit.ly/v3/'
 
       # Requires a login and api key. Get yours from your account page at http://bit.ly/a/account
-      def initialize(login, api_key)
+      def initialize(login, api_key, proxy_addr=nil, proxy_port=nil)
         @default_query_opts = { :login => login, :apiKey => api_key }
+        http_proxy( proxy_addr, proxy_port ) unless proxy_addr.nil?
       end
 
       # Validates a login and api key
