@@ -36,6 +36,10 @@ module Bitly
       #
       # [x_login and x_apiKey]  add this link to another user's history (both required)
       #
+      # [http_proxyaddr and http_proxyport] access API through a proxy serser (pair optional)
+      #
+      # [timeout] timeout in seconds (optional)
+      #
       def shorten(long_url, opts={})
         query = { :longUrl => long_url }.merge(opts.select{|k, v| [:domain, :x_login, :x_apiKey].include?k })
 
