@@ -6,11 +6,12 @@ module Bitly
     class Client
       include HTTParty
       base_uri 'http://api.bit.ly/v3/'
+      default_timeout 1
+      # http_proxy( 'proxy01.globoi.com', 3128 )
 
       # Requires a login and api key. Get yours from your account page at http://bit.ly/a/account
-      def initialize(login, api_key, proxy_addr=nil, proxy_port=nil)
+      def initialize(login, api_key)
         @default_query_opts = { :login => login, :apiKey => api_key }
-        http_proxy( proxy_addr, proxy_port ) unless proxy_addr.nil?
       end
 
       # Validates a login and api key
@@ -36,8 +37,19 @@ module Bitly
       # [x_login and x_apiKey]  add this link to another user's history (both required)
       #
       def shorten(long_url, opts={})
-        query = { :longUrl => long_url }.merge(opts)
-        response = get('/shorten', :query => query)
+        query = { :longUrl => long_url }.merge(opts.select{|k, v| [:domain, :x_login, :x_apiKey].include?k })
+
+        proxy_settings = nil
+        proxy_settings = { :http_proxyaddr => opts[:http_proxyaddr], 
+                           :http_proxyport => opts[:http_proxyport]} unless opts[:http_proxyaddr].empty?
+        
+        timeout = nil || opts[:timeout]
+        
+        options = { :query => query }
+        options.merge!(proxy_settings) unless proxy_settings.nil?
+        options.merge!({:timeout => timeout}) unless (timeout.nil? or not (timeout.is_a?(Integer) || timeout.is_a?(Float)))
+
+        response = get('/shorten', options)
         return Bitly::V3::Url.new(self, response['data'])
       end
 
